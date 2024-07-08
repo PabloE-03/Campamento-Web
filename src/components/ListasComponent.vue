@@ -257,6 +257,8 @@ const insertChildren = async () =>{
     }
     else if(insertar)
     {
+        rawNombre.value = rawNombre.value.trim();
+        rawApellido.value = rawApellido.value.trim();
         let children = new Children(rawNumeroSS.value,rawNombre.value,rawApellido.value,enfermedades);
         const data = await postChildren(children);
 
@@ -334,55 +336,16 @@ const patchRol = async()=>{
     secondInterval = setInterval(hideInfoRol,5000)
 }
 
-const iniciarSesion = async()=>{
-    const emailInput = document.getElementById("email");
-    const passwd = document.getElementById("passwd");
-    const data = await loginRequest(emailInput.value,passwd.value);
-    infoSesion.value = "";
-    if(typeof data!="undefined")
+const getAssignedChildren = async() =>{
+    const rawChildrens = await asignadosPorMonitor(usuarioPinia.usuario.nombre);
+    let array = [];
+    for(let i = 0;i<rawChildrens.length;i++)
     {
-        if(data.rol=="Administrador")
-        {
-            administrador.value = true;
-        }
-        else if(data.rol=="Moderador")
-        {
-            moderador.value = true;
-        }
-        else if(data.rol=="Vetado")
-        {
-            vetado.value = true;
-        }
-        usuario.email = data.email;
-        usuario.nombre = data.nombre;
-        usuario.rol = data.rol;
-        login.value = true;
-
-        const rawChildrens = await asignadosPorMonitor(usuario.nombre);
-        let array = [];
-        let arraySick = [];
-        for(let i = 0;i<rawChildrens.length;i++)
-        {
-            let item = rawChildrens[i];
-            array.push(new Children(item.numeroSS,item.nombre,item.apellido,item.enfermedades));
-            for(let k = 0;k<item.enfermedades.length;k++)
-            {
-                if(item.enfermedades[i]!="Ninguna")
-                {
-                    arraySick.push(new Children(item.numeroSS,item.nombre,item.apellido,item.enfermedades));
-                }
-            }
-        }
-        childrenMonitores = ref(array);
-        childrenMonitoresSick = ref(arraySick);
-        recarga.value = false;
-    
+        let valorChildren = rawChildrens[i].nombre + " " + rawChildrens[i].apellido;
+        array.push(valorChildren);
     }
-    else
-    {
-        infoSesion.value = "El usuario o contraseña son erroneos";
-    }
-    recarga.value = true;
+    childrenMonitores = ref(array);
+    recarga.value = false;
 }
 
 const setRecarga = ()=>{
@@ -431,6 +394,7 @@ onMounted(()=>{
     getAllChildrens();
     getAllMonitores();
     getNotAssignedChild();
+    getAssignedChildren();
     interval = setInterval(setRecarga,100);
     
 })
@@ -443,18 +407,18 @@ onMounted(()=>{
             <button class="button-container" v-if="!showChildren" v-on:click="showChildren=true">Mostrar</button>
             <button class="button-container" v-else v-on:click="showChildren=false">Ocultar</button>
             <ul v-show="showChildren">
-                <li v-for="i in childrenMonitores">{{ i.nombre+" "+i.apellido }}</li>
+                <p style="font-size: 1.2em; margin-top: 5%;" v-for="i in childrenMonitores">{{ i }}<button style="margin-left: 3%;">Marcar</button></p>
             </ul>
         </div>
-        <div class="children-monitor">
+        <!-- <div class="children-monitor">
             <h2 class="cabecera-container">Tus niños enfermos</h2>
             <button class="button-container" v-if="!showSickChildren" v-on:click="showSickChildren=true">Mostrar</button>
             <button class="button-container" v-else v-on:click="showSickChildren=false">Ocultar</button>
             <ul v-show="showSickChildren">
                 <li v-for="i in childrenMonitoresSick">{{ i.nombre+" "+i.apellido+" - "+i.enfermedades}}</li>
             </ul>
-        </div>
-        <div class="children-monitor">
+        </div> -->
+        <!-- <div class="children-monitor">
             <h2 class="cabecera-container">Todos los niños</h2>
             <button class="button-container" v-if="!showAllChildrens" v-on:click="showAllChildrens=true">Mostrar</button>
             <button class="button-container" v-else v-on:click="showAllChildrens=false">Ocultar</button>
@@ -462,13 +426,14 @@ onMounted(()=>{
                 <li v-for="i in childrens">{{ i }}</li>
             
             </ul>
-        </div>
+        </div> -->
         <!-- Desactivado temporalmente  -->
         <!-- <div class="children-monitor">
             <h2 class="cabecera-container">Buscador de niños</h2>
             <h2 style="font-weight: bolder; margin: 5% 0%;">Nombre:<input type="text"></h2>
             <button class="button-container">Buscar</button>
         </div> -->
+        
         <div class="children-monitor" v-show="administrador || moderador">
             <h2 class="cabecera-container">Administración</h2>
             <h3 style="font-weight: bolder;">Asignar niños</h3>
@@ -503,7 +468,7 @@ onMounted(()=>{
             </div>
             <div class="agregar-niños" v-show="administrador || moderador">
                 <h3 style="font-weight: bolder; margin-bottom: 3%;">Agregar niños</h3>
-                <h3>Numero SS:<input type="text" id="numeross-niño"></h3>
+                <h3>Numero de niño:<input type="text" id="numeross-niño"></h3>
                 <h3>Nombre:<input type="text" id="nombre-niño"></h3>
                 <h3>Apellido:<input type="text" id="apellido-niño"></h3>
                 <h3>Enfermedad:<input type="text" id="enfermedad-niño"></h3>
@@ -537,6 +502,7 @@ onMounted(()=>{
                 <h3 v-bind:style="styleRol" v-show="showRol">{{ infoRol }}</h3>
             </div>
         </div>
+        <button style="margin-left: 43%;" class="button-container" v-on:click="router.push('/')">Volver</button>
     </div>
     <div class="screen-pc" v-else>
         <h1 class="texto-ordenador">Esta aplicación solo se puede usar en dispositivos móviles, lamentamos las molestias</h1>
