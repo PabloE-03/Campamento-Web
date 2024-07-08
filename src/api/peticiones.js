@@ -246,3 +246,30 @@ export const changeRol = async (nombre,rol) => {
         return false;
     }
 }
+
+export const markChildren = async(children)=>{
+    try
+    {
+        let url = basePath+"/campamento/marcar/children";
+
+        const response = await fetch(url,{
+            method:"PATCH",
+            headers:{
+                "Content-Type":"application/json",
+                "children":children
+            }
+        })
+
+        if(!response.ok)
+        {
+            throw new Error("Error al marcar el niño")
+        }
+
+        return true;
+    }
+    catch(error)
+    {
+        console.log(error);
+        return false;
+    }
+}

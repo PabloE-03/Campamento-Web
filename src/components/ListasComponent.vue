@@ -1,21 +1,16 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { onMounted,ref, watch} from 'vue';
-import {getAllObjectRequest,asignar,desAsignar,asignadosPorMonitor,postChildren,changePassword,changeRol,loginRequest} from "@/api/peticiones";
+import {getAllObjectRequest,asignar,desAsignar,asignadosPorMonitor,postChildren,changePassword,changeRol,loginRequest, markChildren} from "@/api/peticiones";
 import { Children } from '@/models/childrens';
 import { Monitor } from '@/models/monitor';
 import { defineUserStore } from '@/stores/usuarios';
 const router = useRouter();
 const passByScreen = ref(false);
 const showChildren = ref(false);
-const showSickChildren = ref(false);
-const showAllChildrens = ref(false);
-const login = ref(false);
 
 const usuarioPinia = defineUserStore();
-let usuario = new Monitor("","","");
 
-let infoSesion = ref("");
 let administrador = ref(false);
 let moderador = ref(false);
 let vetado = ref(false);
@@ -348,6 +343,19 @@ const getAssignedChildren = async() =>{
     recarga.value = false;
 }
 
+const marcar = async(children) =>{
+    const data = await markChildren(children);
+
+    if(data)
+    {
+        
+    }
+    else
+    {
+        
+    }
+}
+
 const setRecarga = ()=>{
     recarga.value = false;
     clearInterval(interval);
@@ -407,7 +415,7 @@ onMounted(()=>{
             <button class="button-container" v-if="!showChildren" v-on:click="showChildren=true">Mostrar</button>
             <button class="button-container" v-else v-on:click="showChildren=false">Ocultar</button>
             <ul v-show="showChildren">
-                <p style="font-size: 1.2em; margin-top: 5%;" v-for="i in childrenMonitores">{{ i }}<button style="margin-left: 3%;">Marcar</button></p>
+                <p style="font-size: 1.2em; margin-top: 5%;" v-for="i in childrenMonitores">{{ i }}<button style="margin-left: 3%;" v-on:click="marcar(i)">Marcar</button></p>
             </ul>
         </div>
         <!-- <div class="children-monitor">
